@@ -1,5 +1,5 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Shield, Lock } from 'lucide-react';
+import { Vote, Lock, Users } from 'lucide-react';
 
 export function VotingHeader() {
   return (
@@ -9,7 +9,7 @@ export function VotingHeader() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className="p-2 bg-gradient-corporate rounded-lg shadow-glow">
-                <Shield className="h-6 w-6 text-primary-foreground" />
+                <Vote className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">
@@ -25,7 +25,10 @@ export function VotingHeader() {
           
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Shareholder Access</p>
+              <p className="text-sm text-muted-foreground flex items-center space-x-1">
+                <Users className="h-3 w-3" />
+                <span>Shareholder Access</span>
+              </p>
               <ConnectButton.Custom>
                 {({
                   account,

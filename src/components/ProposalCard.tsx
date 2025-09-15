@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, Clock, Users, Shield } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Users, Lock, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { FHEUtils, ContractUtils } from '@/lib/fhe-utils';
+import { useAccount, useWalletClient } from 'wagmi';
+import { ContractInteraction } from '@/lib/contract-interaction';
 
 interface Proposal {
   id: string;
@@ -28,29 +29,43 @@ interface ProposalCardProps {
 export function ProposalCard({ proposal, onVote }: ProposalCardProps) {
   const [voting, setVoting] = useState(false);
   const { toast } = useToast();
+  const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
   
   const handleVote = async (vote: 'for' | 'against') => {
+    if (!address || !walletClient) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to cast a vote.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setVoting(true);
     try {
-      // Encrypt the vote using FHE
-      const encryptedVote = FHEUtils.encryptVote(vote === 'for', 1000); // Mock voting power
-      const proof = FHEUtils.generateVoteProof(encryptedVote);
+      // Create contract interaction instance
+      const contractInteraction = new ContractInteraction(walletClient);
       
-      // Submit to contract
-      const txHash = await ContractUtils.castVote(proposal.id, vote === 'for', 1000);
+      // Cast encrypted vote on-chain
+      const txHash = await contractInteraction.castVote(
+        parseInt(proposal.id),
+        vote === 'for',
+        1000 // Mock voting power - in real implementation, this would come from shareholder data
+      );
       
       // Update local state
       onVote(proposal.id, vote);
       
       toast({
-        title: "Vote Submitted",
-        description: `Your encrypted vote has been recorded successfully. TX: ${txHash.slice(0, 10)}...`,
+        title: "Vote Submitted Successfully",
+        description: `Your encrypted vote has been recorded on-chain. Transaction: ${txHash.slice(0, 10)}...`,
       });
     } catch (error) {
       console.error('Vote submission error:', error);
       toast({
         title: "Vote Failed",
-        description: "There was an error submitting your vote. Please try again.",
+        description: "There was an error submitting your encrypted vote. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -109,7 +124,7 @@ export function ProposalCard({ proposal, onVote }: ProposalCardProps) {
             <span>{proposal.totalVotes} of {proposal.totalEligible} votes</span>
           </div>
           <div className="flex items-center space-x-1">
-            <Shield className="h-4 w-4" />
+            <FileText className="h-4 w-4" />
             <span>Ends {new Date(proposal.endDate).toLocaleDateString()}</span>
           </div>
         </div>
@@ -159,7 +174,7 @@ export function ProposalCard({ proposal, onVote }: ProposalCardProps) {
 
         {proposal.userVoted && (
           <div className="flex items-center justify-center space-x-2 pt-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4" />
+            <Lock className="h-4 w-4" />
             <span>Your encrypted vote has been recorded</span>
           </div>
         )}

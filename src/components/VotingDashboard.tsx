@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ProposalCard } from './ProposalCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Shield, Vote, TrendingUp } from 'lucide-react';
+import { Users, Lock, Vote, TrendingUp, CheckCircle } from 'lucide-react';
 
 // Mock data for demonstration
 const mockProposals = [
@@ -111,11 +111,11 @@ export function VotingDashboard() {
           <Card className="bg-gradient-card shadow-card-custom border border-border/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Security Status</CardTitle>
-              <Shield className="h-4 w-4 text-accent" />
+              <Lock className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-accent">Encrypted</div>
-              <p className="text-xs text-muted-foreground">Zero-knowledge privacy</p>
+              <p className="text-xs text-muted-foreground">FHE privacy protection</p>
             </CardContent>
           </Card>
         </div>
