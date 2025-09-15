@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, Clock, Users, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { FHEUtils, ContractUtils } from '@/lib/fhe-utils';
 
 interface Proposal {
   id: string;
@@ -31,12 +32,22 @@ export function ProposalCard({ proposal, onVote }: ProposalCardProps) {
   const handleVote = async (vote: 'for' | 'against') => {
     setVoting(true);
     try {
+      // Encrypt the vote using FHE
+      const encryptedVote = FHEUtils.encryptVote(vote === 'for', 1000); // Mock voting power
+      const proof = FHEUtils.generateVoteProof(encryptedVote);
+      
+      // Submit to contract
+      const txHash = await ContractUtils.castVote(proposal.id, vote === 'for', 1000);
+      
+      // Update local state
       onVote(proposal.id, vote);
+      
       toast({
         title: "Vote Submitted",
-        description: "Your encrypted vote has been recorded successfully.",
+        description: `Your encrypted vote has been recorded successfully. TX: ${txHash.slice(0, 10)}...`,
       });
     } catch (error) {
+      console.error('Vote submission error:', error);
       toast({
         title: "Vote Failed",
         description: "There was an error submitting your vote. Please try again.",
